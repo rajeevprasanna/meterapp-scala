@@ -1,0 +1,16 @@
+-@ val title: String
+-@ val headline: String = title
+-@ val body: String
+
+!!!
+html
+	head
+		title= title
+		link(rel='stylesheet')(href='/stylesheets/normalize.css')
+		link(rel='stylesheet')(href='/stylesheets/main.css')
+		script(src='/javascripts/jquery-1.10.2.js')
+		script(src='/meterapp.js')
+	body
+		#content
+		h1= headline
+		!= body
