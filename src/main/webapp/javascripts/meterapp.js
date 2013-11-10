@@ -1,4 +1,4 @@
-/*
+
 $(function() {
 
 	// Function to update meter settings with an ajax call
@@ -13,7 +13,7 @@ $(function() {
 			'processData': false,
 			'dataType': 'text',
 			'success': function(jsonReply) {
-				//$("#msgDiv").html("<p>Debug area:</p><p>" + jsonReply + "</p>");
+				//$("#msgDiv").append("<p>" + jsonReply + "</p>");
 			},
 			'error': function(jqXHR, data) {
 				console.log(data);
@@ -95,36 +95,46 @@ $(function() {
 
 	};
 
-	// Set up the change handler for the page selector
-	$("#pageSelector").on("change", function() {
-		initializeGroupingsMetersForPage($("#pageSelector :selected").val());
-	});
 
-	// set up the socket.io connection
-	var socket = io.connect();
+	// Set up atmosphere/comet connection and event callbacks
+	var socket = $.atmosphere;
+	var subsocket;
+	var transport = 'websocket';
 
-	// Set up the socket.io event handlers
-	socket.on('nameResult', function(result) {
-		var message;
+	var request = {
+		url: "/atm-meters",
+		contentType: "application/json",
+		logLevel: 'debug',
+		transport: transport,
+		fallbackTransport: 'long-polling'
+	};
 
-		if (result.success) {
-			message = 'You are now known as ' + result.name + '.';
-		} else {
-			message = result.message;
-		}
-		//$('#msgDiv').append("<p>" + message + "</p>");
-	});
+	request.onOpen = function(response) {
+		transport = response.transport;
+		$('#msgDiv').append("<p>" + "Atmosphere open" + "</p>");
+	};
 
-	socket.on('joinResult', function(result) {
-		var message;
-		message = "You are joined to channel " + result.channel;
-		//$('#msdDiv').append("<p>" + message + "</p>");
-	});
+	request.onError = function(rs) {
+		$('#msgDiv').append("<p>" + "Atmosphere error" + "</p>");
+	};
 
-	socket.on('meterupdate', function(result) {
+	request.onReconnect = function(rq, rs) {
+		$('#msgDiv').append("<p>" + "Atmosphere RECONNECT" + "</p>");
+	};
+
+	request.onClose = function(rs) {
+		$('#msgDiv').append("<p>" + "Atmosphere CLOSE" + "</p>");
+	};
+
+	request.onMessage = function(rs) {
 
 		// Get the meter information and use it to update the meter rows on the page
+		var result = jQuery.parseJSON(rs.responseBody);
+		//$('#msgDiv').append("<p>" + JSON.stringify(result) + "</p>");
+
 		var meters = result.list;
+		//$('#msgDiv').append("<p>" + meters + "</p>");
+
 		for (var i = 0; i < meters.length; i++) {
 			var meter = meters[i];
 			var meterName = meter.name;
@@ -139,8 +149,15 @@ $(function() {
 			if (meterSetting === 0) $meterRowSettingElem.children("input:nth-child(2)").prop('checked', true);
 			if (meterSetting < 0) $meterRowSettingElem.children("input:nth-child(3)").prop('checked', true);
 		}
-		//$('#msgDiv').append("<p>" + "set value to " + meterValue + "</p>");
+
+	};
+
+	// Establish atomosphere/comet connection
+	subSocket = socket.subscribe(request);
+
+	// Set up the change handler for the page selector
+	$("#pageSelector").on("change", function() {
+		initializeGroupingsMetersForPage($("#pageSelector :selected").val());
 	});
 
 });
-*/
