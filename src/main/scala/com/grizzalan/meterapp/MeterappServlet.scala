@@ -14,6 +14,7 @@ import JsonDSL._
 import java.util.Date
 import java.text.SimpleDateFormat
 import scala.concurrent._
+import com.mongodb.casbah.Imports._
 import ExecutionContext.Implicits.global
 
 
@@ -113,7 +114,6 @@ class MeterappServlet(db: Database, mongoClient: MongoClient) extends Meterappsc
 				groupings += Grouping(gn, meterNames.getOrElse(gn, ArrayBuffer[String]()).toVector)
 			}
 
-
 			Page(pageName, groupings.toVector)
 
 		}
@@ -131,8 +131,8 @@ class MeterappServlet(db: Database, mongoClient: MongoClient) extends Meterappsc
 		allMeters foreach { m => 
 			logger.info("meter: " + m)
 			meters += Meter(m.as[String]("name"), 
-							m.as[Int]("value"), 
-							m.as[Int]("setting"))
+							m.as[Double]("value"), 
+							m.as[String]("setting"))
 		}
 
 		Map("list" -> meters.toVector)
@@ -142,13 +142,8 @@ class MeterappServlet(db: Database, mongoClient: MongoClient) extends Meterappsc
 	// put a new setting for a meter
 	put("/meter/:meterName") {
 		val meterName = params("meterName")
-		logger.info("Received put request for " + meterName)
-		val newSetting = parsedBody.extract[MeterSetting].setting match {
-			case "increase" => 1
-			case "decrease" => -1
-			case _			=> 0
-		}
-		logger.info("New setting: " + newSetting)
+		val newSetting = parsedBody.extract[MeterSetting].setting
+		logger.info("Received put request for " + meterName + "; new setting: " + newSetting)
 
 		val mongoColl = mongoClient("meterapp")("meter")
 		val query = MongoDBObject("name" -> meterName)
@@ -169,5 +164,5 @@ class MeterappServlet(db: Database, mongoClient: MongoClient) extends Meterappsc
 case class GroupingMeter(groupingName: String, meterName: String)
 case class Grouping(name: String, meters: Vector[String])
 case class Page(name: String, groupings: Vector[Grouping])
-case class Meter(name: String, value: Int, setting: Int)
+case class Meter(name: String, value: Double, setting: String)
 case class MeterSetting(setting: String)

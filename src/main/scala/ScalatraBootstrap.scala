@@ -1,9 +1,9 @@
 import com.grizzalan.meterapp._
 import com.mchange.v2.c3p0.ComboPooledDataSource
-import org.slf4j.LoggerFactory
 import scala.slick.session.Database
 import com.mongodb.casbah.Imports._
 import org.scalatra._
+import scalate.ScalateSupport
 import javax.servlet.ServletContext
 import _root_.akka.actor.ActorSystem
 import org.scalatra.json._
@@ -11,6 +11,7 @@ import org.json4s._
 import JsonDSL._
 import jackson.JsonMethods._
 import scala.concurrent.duration._
+import org.slf4j.{Logger, LoggerFactory}
 import org.scalatra.atmosphere._
 
 
@@ -37,8 +38,8 @@ class ScalatraBootstrap extends LifeCycle {
 
 		allMeters foreach { m => 
 			meters += Meter(m.as[String]("name"), 
-							m.as[Int]("value"), 
-							m.as[Int]("setting"))
+							m.as[Double]("value"), 
+							m.as[String]("setting"))
 		}
 
 		val jsonObject = ("list" -> meters.toList.map { m =>
@@ -53,16 +54,26 @@ class ScalatraBootstrap extends LifeCycle {
 
 		allMeters foreach { m => 
 			val meter = Meter(m.as[String]("name"), 
-							m.as[Int]("value"), 
-							m.as[Int]("setting"))
-			var newValue = meter.value
-			if (meter.setting < 0 && meter.value > 0) {
-				newValue += -1
-			} else if (meter.setting > 0 && meter.value < 100) {
-				newValue += 1
-			}
+							m.as[Double]("value"), 
+							m.as[String]("setting"))
+			val newValue = 
+				if (meter.setting == "increase") {
+					if (meter.value + 1.0 < 100.0) {
+						meter.value + 1.0
+					} else {
+						100.0
+					}
+				} else if (meter.setting == "decrease") {
+					if (meter.value - 1.0 > 0.0) {
+						meter.value - 1.0
+					} else {
+						0.0
+					}
+				} else { // should be meter.setting == "hold"
+					meter.value
+				}
 			val query = MongoDBObject("name" -> meter.name)
-			val update = $set("value" -> newValue.toDouble)
+			val update = $set("value" -> newValue)
 			val result = mongoColl.update( query, update)
 		}
 	}

@@ -59,9 +59,13 @@ $(function() {
 						var $rdoIncrease = $("<input type='radio' name='" + groupingId + meterId + "' value='increase'>Increase</input>");
 						var $rdoHold = $("<input type='radio' name='" + groupingId + meterId + "' value='hold'>Hold</input>");
 						var $rdoDecrease = $("<input type='radio' name='" + groupingId + meterId + "' value='decrease'>Decrease</input>");
-						if (meterSetting > 0) $rdoIncrease.prop('checked', true);
-						if (meterSetting === 0) $rdoHold.prop('checked', true);
-						if (meterSetting < 0) $rdoDecrease.prop('checked', true);
+						if (meterSetting === 'increase') {
+							$rdoIncrease.prop('checked', true);
+						} else if (meterSetting === 0) {
+							$rdoDecrease.prop('checked', true);
+						} else {
+							$rdoHold.prop('checked', true);
+						}
 
 						var $settingEntry = $("<td class='meterSetting'/>");
 						$settingEntry.append($rdoIncrease).append($rdoHold).append($rdoDecrease);
@@ -145,9 +149,13 @@ $(function() {
 			var $meterRowValueElem = $meterRow.children("td:nth-child(2)");
 			$meterRowValueElem.text(meterValue);
 			var $meterRowSettingElem = $meterRow.children("td:nth-child(3)");
-			if (meterSetting > 0) $meterRowSettingElem.children("input:nth-child(1)").prop('checked', true);
-			if (meterSetting === 0) $meterRowSettingElem.children("input:nth-child(2)").prop('checked', true);
-			if (meterSetting < 0) $meterRowSettingElem.children("input:nth-child(3)").prop('checked', true);
+			if (meterSetting === "increase") {
+				$meterRowSettingElem.children("input:nth-child(1)").prop('checked', true);
+			} else if (meterSetting === "decrease") {
+				$meterRowSettingElem.children("input:nth-child(3)").prop('checked', true);
+			} else /* should be 'hold' */ {
+				$meterRowSettingElem.children("input:nth-child(2)").prop('checked', true);
+			}
 		}
 
 	};
