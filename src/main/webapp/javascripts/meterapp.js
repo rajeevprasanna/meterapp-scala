@@ -71,13 +71,11 @@ $(function() {
 						$settingEntry.append($rdoIncrease).append($rdoHold).append($rdoDecrease);
 
 						// Attach event handlers that will update the meter settings when changed
-						$settingEntry.children().on("change", function() {
+						$settingEntry.children().on("click", function() {
 							var $this = $(this);
-							if ($this.prop('checked')) {
-								var meterName = $this.parent().siblings().first().text();
-								var newSetting = $this.val();
-								setMeterSetting(meterName, newSetting);
-							}
+							var meterName = $this.parent().siblings().first().text();
+							var newSetting = $this.val();
+							setMeterSetting(meterName, newSetting);
 						});
 
 						// Create and append the row
