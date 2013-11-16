@@ -81,7 +81,7 @@ $(function() {
 						});
 
 						// Create and append the row
-						var $meterRow = $("<tr id='" + meterId + "'></tr>");
+						var $meterRow = $("<tr id='" + groupingId + "-" + meterId + "'></tr>");
 						$meterRow.append("<td class='meterName'>" + meterName + "</td>")
 							.append("<td class='meterValue'>" + meterValue + "</td>")
 							.append($settingEntry);
@@ -145,17 +145,23 @@ $(function() {
 			var meterValue = meter.value;
 			var meterSetting = meter.setting;
 			var meterId = meterName.replace(" ", "");
-			var $meterRow = $("#" + meterId);
-			var $meterRowValueElem = $meterRow.children("td:nth-child(2)");
-			$meterRowValueElem.text(meterValue);
-			var $meterRowSettingElem = $meterRow.children("td:nth-child(3)");
-			if (meterSetting === "increase") {
-				$meterRowSettingElem.children("input:nth-child(1)").prop('checked', true);
-			} else if (meterSetting === "decrease") {
-				$meterRowSettingElem.children("input:nth-child(3)").prop('checked', true);
-			} else /* should be 'hold' */ {
-				$meterRowSettingElem.children("input:nth-child(2)").prop('checked', true);
-			}
+			var $tables = $("table");
+			$tables.each(function() {
+				var $this = $(this);
+				var groupingId = $this.attr("id");
+				var meterRowId = groupingId + "-" + meterId;
+				var $meterRow = $("#" + meterRowId);
+				var $meterRowValueElem = $meterRow.children("td:nth-child(2)");
+				$meterRowValueElem.text(meterValue);
+				var $meterRowSettingElem = $meterRow.children("td:nth-child(3)");
+				if (meterSetting === "increase") {
+					$meterRowSettingElem.children("input:nth-child(1)").prop('checked', true);
+				} else if (meterSetting === "decrease") {
+					$meterRowSettingElem.children("input:nth-child(3)").prop('checked', true);
+				} else /* should be 'hold' */ {
+					$meterRowSettingElem.children("input:nth-child(2)").prop('checked', true);
+				}
+			});
 		}
 
 	};
